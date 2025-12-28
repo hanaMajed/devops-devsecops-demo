@@ -1,0 +1,225 @@
+
+import os
+import subprocess
+
+# ═══════════════════════════════════════════════════════════════════
+# CONFIGURATION - Baddel haw m3a project mte3ek
+# ═══════════════════════════════════════════════════════════════════
+
+PROJECT_NAME = "flask-demo"
+GIT_URL = "https://github.com/pallets/flask.git"
+BUILD_DIR = "/tmp/flask-demo"
+
+# ═══════════════════════════════════════════════════════════════════
+# FONCTION 1: Print m3a colors (bich nchoofo mliih fil terminal)
+# ═══════════════════════════════════════════════════════════════════
+
+def print_step(message, status="info"):
+    """Print message m3a colors"""
+    colors = {
+        "info": "\033[94m",    # Blue
+        "success": "\033[92m", # Green
+        "error": "\033[91m"    # Red
+    }
+    reset = "\033[0m"
+
+    icon = "▶" if status == "info" else "✓" if status == "success" else "✗"
+    color = colors.get(status, colors["info"])
+
+    print(f"{color}{icon} {message}{reset}")
+
+# ═══════════════════════════════════════════════════════════════════
+# FONCTION 2: Run command w check ken nja7
+# ═══════════════════════════════════════════════════════════════════
+
+def run(command, description):
+    """
+    Execute command w dhher el output
+
+    Args:
+        command: El command bich yitjareb (string)
+        description: Chnou ya3mel (bich yitdhher fil console)
+
+    Returns:
+        True ken nja7, False ken fama error
+    """
+    print_step(f"{description}...", "info")
+
+    try:
+        # Run el command
+        result = subprocess.run(
+            command,
+            shell=True,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+
+        print_step(f"{description} - Done!", "success")
+        return True
+
+    except subprocess.CalledProcessError as e:
+        print_step(f"{description} - Failed!", "error")
+        print(f"   Error: {e.stderr}")
+        return False
+
+# ═══════════════════════════════════════════════════════════════════
+# STEP 1: CLONE EL PROJECT
+# ═══════════════════════════════════════════════════════════════════
+
+def clone_project():
+    """Clone el Git repository"""
+    print("\n" + "="*60)
+    print("STEP 1: CLONING PROJECT")
+    print("="*60)
+
+    # Na7iw el directory el 9dim ken mawjoud
+    if os.path.exists(BUILD_DIR):
+        run(f"rm -rf {BUILD_DIR}", "Removing old files")
+
+    # Clone
+    success = run(
+        f"git clone {GIT_URL} {BUILD_DIR}",
+        f"Cloning from {GIT_URL}"
+    )
+
+    return success
+
+# ═══════════════════════════════════════════════════════════════════
+# STEP 2: INSTALL DEPENDENCIES
+# ═══════════════════════════════════════════════════════════════════
+
+def install_dependencies():
+    """Install Python packages"""
+    print("\n" + "="*60)
+    print("STEP 2: INSTALLING DEPENDENCIES")
+    print("="*60)
+
+    # Nbaddlou lel build directory
+    os.chdir(BUILD_DIR)
+
+    # Check ken famma requirements.txt
+    if os.path.exists("requirements.txt"):
+        success = run(
+            "pip install -r requirements.txt -q",
+            "Installing Python packages"
+        )
+    elif os.path.exists("setup.py"):
+        success = run(
+            "pip install -e . -q",
+            "Installing project in development mode"
+        )
+    else:
+        print_step("No requirements.txt found, skipping", "info")
+        success = True
+
+    return success
+
+# ═══════════════════════════════════════════════════════════════════
+# STEP 3: RUN TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+def run_tests():
+    """Run tests ken mawjoudin"""
+    print("\n" + "="*60)
+    print("STEP 3: RUNNING TESTS")
+    print("="*60)
+
+    # Check ken famma tests
+    if os.path.exists("tests") or os.path.exists("test"):
+        # Jarreb pytest
+        success = run(
+            "python -m pytest tests/ -v",
+            "Running tests with pytest"
+        )
+    else:
+        print_step("No tests found, skipping", "info")
+        success = True
+
+    return success
+
+# ═══════════════════════════════════════════════════════════════════
+# STEP 4: BUILD
+# ═══════════════════════════════════════════════════════════════════
+
+def build_project():
+    """Build el project"""
+    print("\n" + "="*60)
+    print("STEP 4: BUILDING PROJECT")
+    print("="*60)
+
+    # Check ken famma setup.py (Python package)
+    if os.path.exists("setup.py"):
+        success = run(
+            "python setup.py build",
+            "Building Python package"
+        )
+    else:
+        print_step("No build needed, skipping", "info")
+        success = True
+
+    return success
+
+# ═══════════════════════════════════════════════════════════════════
+# STEP 5: DEPLOY (Simulation)
+# ═══════════════════════════════════════════════════════════════════
+
+def deploy():
+    """Deploy el application (simulation)"""
+    print("\n" + "="*60)
+    print("STEP 5: DEPLOYING APPLICATION")
+    print("="*60)
+
+    # Haka just simulation - fi real world bich ta3mel deploy 7a9i9i
+    print_step("Deployment simulated - Project ready!", "success")
+    print_step(f"Project location: {BUILD_DIR}", "info")
+
+    return True
+
+# ═══════════════════════════════════════════════════════════════════
+# MAIN PIPELINE
+# ═══════════════════════════════════════════════════════════════════
+
+def main():
+    """Run el pipeline el kemel"""
+
+    print("╔═══════════════════════════════════════════════════════════╗")
+    print("║          DevOps Pipeline - Simple Example               ║")
+    print("╚═══════════════════════════════════════════════════════════╝")
+    print(f"\nProject: {PROJECT_NAME}")
+    print(f"Git URL: {GIT_URL}")
+
+    # Run kol step wahda ba3d okhra
+    steps = [
+        ("Clone", clone_project),
+        ("Install", install_dependencies),
+        ("Test", run_tests),
+        ("Build", build_project),
+        ("Deploy", deploy)
+    ]
+
+    for step_name, step_func in steps:
+        success = step_func()
+
+        if not success:
+            print("\n" + "="*60)
+            print_step(f"Pipeline FAILED at {step_name} step", "error")
+            print("="*60)
+            return False
+
+    # Success!
+    print("\n" + "="*60)
+    print_step("Pipeline COMPLETED Successfully! 🎉", "success")
+    print("="*60)
+
+    return True
+
+# ═══════════════════════════════════════════════════════════════════
+# RUN THE SCRIPT
+# ═══════════════════════════════════════════════════════════════════
+
+if __name__ == "__main__":
+    success = main()
+
+    # Exit code
+    exit(0 if success else 1)
